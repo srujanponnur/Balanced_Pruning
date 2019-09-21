@@ -1,0 +1,112 @@
+table {
+	border: 2px solid black;
+	border-collapse: collapse;
+	margin-left: 150px;
+    margin-top: 150px
+}
+
+td, th {
+	border: 2px solid black;
+	height: 93px;
+	width: 490px;
+}
+
+th {
+	text-align: left;
+	padding-left: 3px;
+}
+
+tr:nth-child(even) {
+    background: #CCC
+}
+
+.small-width {
+	width: 260px;
+}
+
+.small-height {
+	height: 30px;
+}
+
+.solid-border {
+	border: 1px solid black;
+}
+
+.yellow-bg {
+	background-color: yellow;
+}
+
+#block-3 {
+	display: inline-block;
+    margin-left: 6px;
+    margin-bottom: 3px;
+    border-style: dashed;
+}
+
+#block-1 {
+	width: 260px;
+    margin: 0 auto;
+    height: 65px;
+    margin-top: 5px;
+    padding-top: 5px;
+    font-size: 13px;
+    padding-left: 6px;
+}
+
+#block-2 {
+	width: 132px;
+    margin: 0 auto;
+    height: 22px;
+    padding-top: 7;
+    padding-left: 5;
+    text-decoration: underline;
+}
+
+#eg-2-outer-block {
+	width: 267px;
+    height: 90px;
+    margin: 0 auto
+}
+
+#eg-2-inner-block {
+    /*width: 188px;*/
+    margin-left: 15px;
+    margin-top: 15px;
+    width: 195px;
+}
+
+#block-4 {
+    display: inline-block;
+    width: 136px;
+    border-right: 0;
+    /*height: 30px;*/
+}
+
+#block-5 {
+    display:inline-block;
+    width: 48px;
+    padding-left: 0;
+    /*height: 30px;*/
+}
+
+#block-6 {
+    width: 140px;
+    float: right;
+    /*height: 30px;*/
+}
+
+#eg-2-cell {
+	height: 105px;
+}
+
+.eg-2-digit-blocks {
+	padding-left: 8px;
+    padding-top: 6px;
+    height: 23px;
+
+}
+
+.wide-letter-space {
+	letter-spacing: 1.3px;
+    font-size: 14px;
+}
