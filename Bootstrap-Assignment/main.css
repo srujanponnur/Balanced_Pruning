@@ -1,0 +1,89 @@
+.removeButton
+{
+	background-color:  #ff704d;
+	border:0.5px solid  #ff704d;
+	border-radius:100px;
+	width:20px;
+	padding:5px;
+}
+
+.nav-link
+{
+	color:white;
+}
+
+label
+{
+	margin-right:20px;
+	font-weight: 440;
+	font-size: 15px;
+}
+
+.removeButton:hover
+{
+	opacity: 0.7;
+	color:white;
+}
+
+section {
+
+   line-height: 1.5;
+   background-color: whitesmoke;
+   -webkit-box-shadow: 0 10px 6px -6px #777;
+   -moz-box-shadow: 0 10px 6px -6px #777;
+   box-shadow: 0 10px 6px -6px #777;
+   margin: 14px;
+   padding: 30px;
+}
+
+.blueColor
+{
+	background-color: #131339
+}
+
+.panel
+{
+	display:none;
+}
+.section-title {
+
+	font-size: 17px;
+    font-weight: 600;
+}
+
+
+.section-title-second 
+{
+	padding-top: 5px;
+	margin-top:5px;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
+	font-size: 19px;
+    font-weight: 457;
+}
+
+#name {
+	font-size: 28px;
+    font-weight: 600;
+}
+
+#name-footer {
+	font-size: 18px;
+}
+
+#addCell
+{
+	float:right;
+	margin-right:10px;
+	color: white;
+	background-color: #666666;
+	border:None;
+	border-radius:100px;
+}
+
+#img-interests
+{
+	margin-top:10%;
+	margin-left:35%;
+	border-radius:70px;
+}

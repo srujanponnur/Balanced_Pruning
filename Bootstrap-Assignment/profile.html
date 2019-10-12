@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+  <!-- Meta tags for search engine-->
+  <meta name="keywords" content="Software developer, Grad student, internship, UTD"/>
+  <meta name="author" content="Supraja Ponnur"/>
+  <meta name="description" content="Resume"/>
+  <meta name="last_updates" content="Oct 12 2019"/>
+
+  <title> Supraja Ponnur</title>
+  <link rel="stylesheet" type="text/css" href="main.css"/>
+  <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="all.css"/>
+</head>
+
+<body>
+<div class="navbar navbar-expand-lg blueColor">
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Home</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="contact" aria-selected="false">Order History</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="list-tab" data-toggle="tab" href="#list" role="tab" aria-controls="contact" aria-selected="false">Shopping List</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
+  </li>
+</ul>
+</div>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
+  	
+  	<img id="img-interests" src="Map.png" width="300" height="300" usemap="#interestmap" alt="interests">
+
+  <map class="intLinks" name="interestmap">
+    <area shape="rect" coords="0,0,150,150" id="history-tab" target = "_blank" href="profile.html" role="tab">
+    <area shape="rect" coords="150,0,300,150" target = "_blank" href="order.html" alt="chess">
+    <area shape="rect" coords="0,150,150,300" target = "_blank" href="list.html" alt="programming">
+    <area shape="rect" coords="150,150,300,300" target = "_blank" href="contact.html" alt="music">
+  </map>
+
+
+
+  </div>
+  <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+  	<div id = "content">
+	   <section class="firstSection">
+	   	   <div class="toggleDown section-title-second">Profile</div>
+	       <div class="panel">
+		       <div id="name">
+		          Supraja Ponnur
+		       </div>
+		       <div id="name-footer">
+		          Grad | UTD | Software engineer
+		       </div>
+		       <div id="about">
+		          Pursuing masters in computer science at University of texas at dallas.2+ years of experience in software development.Loves to explore new technologies.An NLP enthusiast
+		       </div>
+		    </div>
+	   </section>
+	   <section class="secondSection">
+   	   <div class="toggleDown section-title-second">Education</div>
+   	   <div class="panel">
+	       <div class="section-title"> Education </div>
+	       <article>
+
+	          <ul>
+	             <li> Masters at University of Texas At Dallas 2017-19 </li>
+	             <li> BE (Hons) Computer science At BITS Pilani Hyderabad Campus 2011-15 </li>
+	             <li> Narayana College </li>
+	             <li> St Anthonys High School</li>
+	          </ul>
+	       
+	       </article>
+       </div>
+    </section>
+
+    <section class="thirdSection">
+       <div class="toggleDown section-title-second">Areas of expertise</div>
+       <div class="panel">
+	       <div class="section-title"> Areas of expertise </div>
+	       <article>
+	            <ol>
+	               <li> Software development </li>
+	               <li> REST APIs</li>
+	               <li> Java </li>
+	               <li> Python </li>
+	               <li> Algorithms </li>
+	            </ol>
+	       </article>
+       </div>
+   </section>
+
+
+    <section class="fourthSection">
+       <div class="toggleDown section-title-second">Courses</div>
+       <div class="panel">
+	       <div class="section-title mb-4"> Courses </div>
+	       <article>
+	         <table class="table table-bordered table-hover sortable table-responsive-md table-striped text-center">
+	             
+	             <tr>
+	                <th>
+	                  Course Name
+	                </th>
+	                <th>
+	                  Semester
+	                </th>
+	                <th>
+	                  Year
+	                </th>
+	             </tr>
+
+	             <tr>
+	               <td>
+	                 Design and analysis of algorithms
+	               </td>
+	               <td>
+	                 Fall 
+	               </td>
+	               <td>
+	                 2017
+	               </td>
+	             </tr>
+
+	             <tr>
+	               <td>
+	                 Web Programming languages
+	               </td>
+	               <td>
+	                 Fall 
+	               </td>
+	               <td>
+	                 2017
+	               </td>
+	             </tr>
+
+	             <tr>
+	               <td>
+	                 Database design
+	               </td>
+	               <td>
+	                 Fall 
+	               </td>
+	               <td>
+	                 2017
+	               </td>
+	             </tr>
+
+	         </table>
+	       </article>
+       </div>
+    </section>
+  	</div>
+  </div>
+  <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+  	<table id="historyTable" class="table table-bordered table-hover sortable table-responsive-md table-striped text-center">
+  	<thead>
+  	<tr>
+  		<th class="text-center">Order Number</th>
+        <th class="text-center">Order Description</th>
+        <th class="text-center">Order Delivery Date</th>
+  	</tr>
+  	</thead>
+  	</table>
+  </div>
+  <div class="tab-pane fade" id="list" role="tabpanel" aria-labelledby="list-tab">
+  	<table id="listTable" class="table table-bordered table-hover sortable table-responsive-md table-striped text-center">
+  	<thead>
+  	<tr>
+  		<th class="text-center">Item Name</th>
+        <th class="text-center">Item Quantity</th>
+        <th class="text-center">Item Required Date</th>
+        <th class="text-center">Remove</th>
+  	</tr>
+  	</thead>
+  	</table>
+  	<button id="addCell">Add Item</button>
+  </div>
+  <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+  	<div id = "content">
+	   <section class="firstSection">
+	   	   <div class="toggleDown section-title-second">Contact</div>
+	       <div class="panel">
+		       <div id="name">
+		          Supraja Ponnur
+		       </div>
+		       <div id="name-footer">
+		          Grad | UTD | Software engineer
+		       </div>
+		       <div id="about">
+		          your Contact Info  <!--further Styling required-->
+		       </div>
+		    </div>
+	   </section>
+  	</div>
+</div>
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="bootstrap.min.js"></script>
+<script type="text/javascript" src="all.js"></script>
+<script type="text/javascript" src="main.js"></script>
+</body>
+</html>
