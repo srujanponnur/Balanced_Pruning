@@ -177,12 +177,38 @@
   	<table id="listTable" class="table table-bordered table-hover sortable table-responsive-md table-striped text-center">
   	<thead>
   	<tr>
-  		<th class="text-center">Item Name</th>
-        <th class="text-center">Item Quantity</th>
-        <th class="text-center">Item Required Date</th>
-        <th class="text-center">Remove</th>
+  		<th class="text-center" value="1">
+  		Order Number
+  		<span class="table-up ml-2"><a href="#!" class="indigo-text"><i class="fas fa-long-arrow-alt-up"
+                    aria-hidden="true"></i></a></span>
+	      <span class="table-down"><a href="#!" class="indigo-text"><i class="fas fa-long-arrow-alt-down"
+	            aria-hidden="true"></i></a></span>
+  		</th>
+        <th class="text-center" value="2">
+        Order Description
+        <span class="table-up ml-2"><a href="#!" class="indigo-text"><i class="fas fa-long-arrow-alt-up"
+                    aria-hidden="true"></i></a></span>
+              <span class="table-down"><a href="#!" class="indigo-text"><i class="fas fa-long-arrow-alt-down"
+                    aria-hidden="true"></i></a></span>
+        </th>
+        <th class="text-center" value="3">
+        Order Delivery Date
+        <span class="table-up ml-2"><a href="#!" class="indigo-text"><i class="fas fa-long-arrow-alt-up"
+                    aria-hidden="true"></i></a></span>
+              <span class="table-down"><a href="#!" class="indigo-text"><i class="fas fa-long-arrow-alt-down"
+                    aria-hidden="true"></i></a></span>
+        </th>
+         <th class="text-center" value="3">
+        Price
+        <span class="table-up ml-2"><a href="#!" class="indigo-text"><i class="fas fa-long-arrow-alt-up"
+                    aria-hidden="true"></i></a></span>
+              <span class="table-down"><a href="#!" class="indigo-text"><i class="fas fa-long-arrow-alt-down"
+                    aria-hidden="true"></i></a></span>
+        </th>
   	</tr>
   	</thead>
+  	<tbody id="historyBody">
+  	</tbody>
   	</table>
   	<button id="addCell">Add Item</button>
   </div>
