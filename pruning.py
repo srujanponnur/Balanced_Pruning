@@ -19,6 +19,8 @@ import torchvision.utils as vutils
 import seaborn as sns
 import torch.nn.init as init
 import pickle
+from pyhessian import hessian
+
 
 class ImbalanceCIFAR10(torchvision.datasets.CIFAR10):
     cls_num = 10
@@ -265,6 +267,89 @@ def original_initialization(mask_temp, initial_state_dict):
             param.data = initial_state_dict[name]
     step = 0
 
+def get_dist(outputs, device):
+    n = outputs.shape[0]
+    if device == 'cuda':
+        outputs = outputs.detach().cpu().numpy()
+    else:
+        outputs = outputs.detach().numpy()
+
+    dist_list = []
+    for i in range(n):
+        sorted_prob = sorted(outputs[i, :], reverse=True)
+        dist = sorted_prob[0] - sorted_prob[1]
+        dist_list.append(dist)
+
+    return dist_list
+
+
+def get_acc(model, test_loader, n_classes=5, track_grad=True):
+    model.cpu()
+    model.eval()
+    loss_func = nn.CrossEntropyLoss(reduction='none')
+    ce_loss = nn.CrossEntropyLoss()
+    res = {}
+    num_sample_dict = {i: 0 for i in range(n_classes)}
+    num_sample_dict['all'] = 0
+    num_correct_dict = {i: 0 for i in range(n_classes)}
+    num_correct_dict['all'] = 0
+    loss_dict = {i: 0 for i in range(n_classes)}
+    avg_dist_dict = {i: 0 for i in range(n_classes)}
+
+    grad_dict = {i: [] for i in range(n_classes)}
+    hessian_dict = {i: [] for i in range(n_classes)}
+
+    for x_test, y_test in test_loader:
+        y_pred = model(x_test)
+        y_hard_pred = torch.argmax(y_pred, axis=1)
+        y_soft_pred = nn.softmax(y_pred, dim=1)
+        num_correct = torch.sum(y_hard_pred == y_test).item()
+        num_sample_dict['all'] += len(y_test)
+        num_correct_dict['all'] += num_correct
+
+        for i in range(n_classes):
+            if len(y_test[y_test == i]) > 0:
+                num_correct_dict[i] += torch.sum(y_hard_pred[y_test == i] == y_test[y_test == i]).item()
+                num_sample_dict[i] += len(y_test[y_test == i])
+                loss_dict[i] = torch.sum(loss_func(y_pred[y_test == i], y_test[y_test == i])).item()
+                avg_dist_dict[i] += np.sum(get_dist(y_soft_pred[y_test == i], 'cpu'))
+
+    for i in range(n_classes):
+        res['loss_{}'.format(i)] = loss_dict[i] / num_sample_dict[i]
+        res['avg_dist_{}'.format(i)] = avg_dist_dict[i] / num_sample_dict[i]
+        res['acc_{}'.format(i)] = num_correct_dict[i] / num_sample_dict[i]
+
+    if track_grad:
+        loss_func = nn.CrossEntropyLoss()
+        grad_norm_dict = {i: [] for i in range(n_classes)}
+        for x_test, y_test in test_loader:
+            y_pred = model(x_test)
+            for i in range(n_classes):
+                if len(y_test[y_test == i]) > 0:
+                    model.zero_grad()
+                    group_loss = loss_func(y_pred[y_test == i], y_test[y_test == i])
+                    group_loss.backward(retain_graph=True)
+                    sub_norm = torch.norm(torch.stack([torch.norm(w.grad) for w in model.parameters()])).item()
+                    grad_norm_dict[i].append(sub_norm)
+
+        for i in range(n_classes):
+            res['grad_norm_{}'.format(i)] = np.mean(grad_norm_dict[i])
+
+        model.cuda()
+        hessian_norm_dict = {i: [] for i in range(n_classes)}
+        for x_test, y_test in test_loader:
+            for i in range(n_classes):
+                if len(y_test[y_test == i]) > 0:
+                    criterion = torch.nn.CrossEntropyLoss()
+                    hessian_comp = hessian(model, criterion, data=(x_test[y_test == i, :], y_test[y_test == i]),
+                                           cuda=True)
+                    top_eigenvalues, top_eigenvector = hessian_comp.eigenvalues()
+                    hessian_norm_dict[i].append(top_eigenvalues[0])
+
+        for i in range(n_classes):
+            res['hessian_norm_{}'.format(i)] = np.mean(hessian_norm_dict[i])
+
+    return res
 
 def prune_by_percentile(percent, resample=False, reinit=False,**kwargs):
         global step
@@ -399,6 +484,8 @@ for _ite in range(0, ITERATION):
     # Frequency for Testing
     if iter_ % valid_freq == 0:
         accuracy = test(model, test_loader, criterion)
+        res = get_acc(model,test_loader,10)
+        print("The accuracy, gradient norm, hessian matrix", res)
         # Save Weights if accuracy is greater than best accuracy
         if accuracy > best_accuracy:
             best_accuracy = accuracy
