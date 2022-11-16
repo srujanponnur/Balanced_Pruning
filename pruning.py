@@ -214,6 +214,7 @@ def weight_init(m):
             if len(param.shape) >= 2:
                 init.orthogonal_(param.data)
             else:
+                init.normal_(param.data)
 
 def checkdir(directory):
   if not os.path.exists(directory):
@@ -331,8 +332,9 @@ def test(model, test_loader, criterion):
 
 transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
 # traindataset = datasets.CIFAR10('../data', train=True, download=True,transform=transform) # this is for balance
-traindataset = ImbalanceCIFAR10('../data',train=True,download=True, transform=transform)  # this is for imbalance
-testdataset = datasets.CIFAR10('../data', train=False, transform=transform)
+traindataset = ImbalanceCIFAR10('./data',train=True,download=True, transform=transform)  # this is for imbalance
+# traindataset = ImbalanceCIFAR10
+testdataset = datasets.CIFAR10('./data', train=False, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(traindataset, batch_size=60, shuffle=True, num_workers=0,drop_last=False)
     #train_loader = cycle(train_loader)
@@ -344,15 +346,20 @@ resnet_model = resnet18().to(device)
 
 lenet_model = LeNet5().to(device)
 
-model = lenet_model
+model = resnet_model
 
 model.apply(weight_init)
 
 initial_state_dict = copy.deepcopy(model.state_dict()) # check what model points to!
 
-checkdir(f'/content/drive/MyDrive/saves/lenet/cifar10/')      # change the directory depending on model
+path = './data'
+model_string = "lenet"
+dataset = 'cifar10'
+full_path = f'{path}/{model_string}/{dataset}'
 
-torch.save(model, f"/content/drive/MyDrive/saves/lenet/cifar10/initial_state_dict_lt.pth.tar")
+checkdir(f'{full_path}')      # change the directory depending on model
+
+torch.save(model, f"{full_path}/initial_state_dict_lt.pth.tar")
 
 make_mask(model)
 
@@ -364,11 +371,11 @@ for name, param in model.named_parameters():
 
 bestacc = 0.0
 best_accuracy = 0
-ITERATION = 35 # number of cycles of pruning that should be done.
+ITERATION = 2 # number of cycles of pruning that should be done.
 comp = np.zeros(ITERATION,float)
 bestacc = np.zeros(ITERATION,float)
 step = 0
-end_iter = 100 # Number of Epochs
+end_iter = 3 # Number of Epochs
 all_loss = np.zeros(end_iter, float)
 all_accuracy = np.zeros(end_iter, float)
 prune_percent = 10 # 10 percent pruning rate
@@ -395,8 +402,8 @@ for _ite in range(0, ITERATION):
         # Save Weights if accuracy is greater than best accuracy
         if accuracy > best_accuracy:
             best_accuracy = accuracy
-            checkdir(f"/content/drive/MyDrive/saves/lenet/cifar10/") # change the path depending on model
-            torch.save(model,f"/content/drive/MyDrive/saves/lenet/cifar10/{_ite}_model_lt.pth.tar")
+            checkdir(f"{full_path}") # change the path depending on model
+            torch.save(model,f"{full_path}/{_ite}_model_lt.pth.tar")
 
     # Training
     loss = train(model, train_loader, optimizer, criterion)
@@ -407,26 +414,28 @@ for _ite in range(0, ITERATION):
     if iter_ % print_freq == 0:
         pbar.set_description(
             f'Train Epoch: {iter_}/{end_iter} Loss: {loss:.6f} Accuracy: {accuracy:.2f}% Best Accuracy: {best_accuracy:.2f}%')
-  bestacc[_ite] = best_accuracy
-  plt.plot(np.arange(1,(end_iter)+1), 100*(all_loss - np.min(all_loss))/np.ptp(all_loss).astype(float), c="blue", label="Loss") 
-  plt.plot(np.arange(1,(end_iter)+1), all_accuracy, c="red", label="Accuracy") 
-  plt.title(f"Loss Vs Accuracy Vs Iterations (CIFAR10,LENET)") 
-  plt.xlabel("Iterations") 
-  plt.ylabel("Loss and Accuracy") 
-  plt.legend() 
-  plt.grid(color="gray") 
-  checkdir(f"{os.getcwd()}/plots/lt/lenet/cifar10/")
-  plt.savefig(f"{os.getcwd()}/plots/lt/lenet/cifar10/lt_LossVsAccuracy_{_ite}.png", dpi=1200) 
-  plt.close()
+#   bestacc[_ite] = best_accuracy
+#   print(all_loss, bestacc)
+#   plt.plot(np.arange(1,(end_iter)+1), 100*(all_loss - np.min(all_loss))/np.ptp(all_loss).astype(float), c="blue", label="Loss") 
+#   plt.plot(np.arange(1,(end_iter)+1), all_accuracy, c="red", label="Accuracy") 
+#   plt.title(f"Loss Vs Accuracy Vs Iterations (CIFAR10,LENET)") 
+#   plt.xlabel("Iterations") 
+#   plt.ylabel("Loss and Accuracy") 
+#   plt.legend() 
+#   plt.grid(color="gray") 
+#   checkdir(f"{full_path}/plots/lt/lenet/cifar10/")
+#   plt.savefig(f"{full_path}/plots/lt/lenet/cifar10/lt_LossVsAccuracy_{_ite}.png", dpi=1200) 
+#   plt.close()
 
   # Storing the plots 
-  checkdir(f"/content/drive/MyDrive/dumps/lt/lenet/cifar10/")
-  all_loss.dump(f"/content/drive/MyDrive/dumps/lt/lenet/cifar10/lt_all_loss_{_ite}.dat")
-  all_accuracy.dump(f"/content/drive/MyDrive/dumps/lt/lenet/cifar10/lt_all_accuracy_{_ite}.dat")
+  checkdir(f"{full_path}/dumps/lt/lenet/cifar10/")
+  print("coming here in checkdir")
+  all_loss.dump(f"{full_path}/dumps/lt/lenet/cifar10/lt_all_loss_{_ite}.dat")
+  all_accuracy.dump(f"{full_path}/dumps/lt/lenet/cifar10/lt_all_accuracy_{_ite}.dat")
 
   # Storing the model mask
-  checkdir(f"/content/drive/MyDrive/dumps/lt/lenet/cifar10/")
-  with open(f"/content/drive/MyDrive/dumps/lt/lenet/cifar10/lt_mask_{_ite}.pkl", 'wb') as fp:
+  checkdir(f"{full_path}/dumps/lt/lenet/cifar10/")
+  with open(f"{full_path}/dumps/lt/lenet/cifar10/lt_mask_{_ite}.pkl", 'wb') as fp:
       pickle.dump(mask, fp)
 
   best_accuracy = 0   # resetting the variables for next iteration
@@ -434,10 +443,10 @@ for _ite in range(0, ITERATION):
   all_accuracy = np.zeros(end_iter,float)
 
 
-checkdir(f"/content/drive/MyDrive/dumps/lt/lenet/cifar10/")
-comp.dump(f"/content/drive/MyDrive/dumps/lt/lenet/cifar10/lt_compression.dat") # compression numpy array
-bestacc.dump(f"/content/drive/MyDrive/dumps/lt/lenet/cifar10/lt_bestaccuracy.dat") # best acc in each iter
-
+checkdir(f"{full_path}/dumps/lt/lenet/cifar10/")
+comp.dump(f"{full_path}/dumps/lt/lenet/cifar10/lt_compression.dat") # compression numpy array
+bestacc.dump(f"{full_path}/dumps/lt/lenet/cifar10/lt_bestaccuracy.dat") # best acc in each iter
+print(comp)
 # Plotting
 a = np.arange(ITERATION)
 plt.plot(a, bestacc, c="blue", label="Winning tickets") 
@@ -448,6 +457,6 @@ plt.xticks(a, comp, rotation ="vertical")
 plt.ylim(0,100)
 plt.legend() 
 plt.grid(color="gray") 
-checkdir(f"/content/drive/MyDrive/plots/lt/lenet/cifar10/")
-plt.savefig(f"/content/drive/MyDrive/plots/lt/lenet/cifar10/lt_AccuracyVsWeights.png", dpi=1200) 
+checkdir(f"{full_path}/plots/lt/lenet/cifar10/")
+plt.savefig(f"{full_path}/plots/lt/lenet/cifar10/lt_AccuracyVsWeights.png", dpi=1200) 
 plt.close() 
