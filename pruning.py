@@ -1,3 +1,4 @@
+from matplotlib.widgets import RectangleSelector
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -10,6 +11,7 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchmetrics import Recall
 import torchvision
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
@@ -19,6 +21,7 @@ import torchvision.utils as vutils
 import seaborn as sns
 import torch.nn.init as init
 import pickle
+from torchmetrics.classification import MulticlassPrecision, MulticlassRecall
 from pyhessian import hessian
 
 
@@ -298,26 +301,39 @@ def get_acc(model, test_loader, n_classes=5, track_grad=True):
 
     grad_dict = {i: [] for i in range(n_classes)}
     hessian_dict = {i: [] for i in range(n_classes)}
+    y_actual = []
+    total_y_pred = []
+    
+    metricRecall = MulticlassRecall(num_classes=n_classes,average=None)
+    metricPrecision = MulticlassRecall(num_classes=n_classes,average=None)
 
     for x_test, y_test in test_loader:
         y_pred = model(x_test)
         y_hard_pred = torch.argmax(y_pred, axis=1)
-        y_soft_pred = nn.softmax(y_pred, dim=1)
+        total_y_pred.append(y_hard_pred)
+        y_actual.append(y_test)
+        #y_soft_pred = nn.Softmax(y_pred, dim=1)
         num_correct = torch.sum(y_hard_pred == y_test).item()
         num_sample_dict['all'] += len(y_test)
         num_correct_dict['all'] += num_correct
-
         for i in range(n_classes):
             if len(y_test[y_test == i]) > 0:
                 num_correct_dict[i] += torch.sum(y_hard_pred[y_test == i] == y_test[y_test == i]).item()
                 num_sample_dict[i] += len(y_test[y_test == i])
                 loss_dict[i] = torch.sum(loss_func(y_pred[y_test == i], y_test[y_test == i])).item()
-                avg_dist_dict[i] += np.sum(get_dist(y_soft_pred[y_test == i], 'cpu'))
-
+                #avg_dist_dict[i] += np.sum(get_dist(y_soft_pred[y_test == i], 'cpu'))
+    total_y_pred = torch.cat(total_y_pred)
+    y_actual = torch.cat(y_actual)
+    recall = metricRecall(total_y_pred,y_actual)
+    precision = metricPrecision(total_y_pred,y_actual)
     for i in range(n_classes):
         res['loss_{}'.format(i)] = loss_dict[i] / num_sample_dict[i]
-        res['avg_dist_{}'.format(i)] = avg_dist_dict[i] / num_sample_dict[i]
+        #res['avg_dist_{}'.format(i)] = avg_dist_dict[i] / num_sample_dict[i]
         res['acc_{}'.format(i)] = num_correct_dict[i] / num_sample_dict[i]
+        res['Recall_{}'.format(i)] = recall[i].item()
+        res['Precision_{}'.format(i)] = precision[i].item()
+
+
 
     if track_grad:
         loss_func = nn.CrossEntropyLoss()
@@ -431,7 +447,7 @@ resnet_model = resnet18().to(device)
 
 lenet_model = LeNet5().to(device)
 
-model = resnet_model
+model = lenet_model
 
 model.apply(weight_init)
 
@@ -460,7 +476,7 @@ ITERATION = 2 # number of cycles of pruning that should be done.
 comp = np.zeros(ITERATION,float)
 bestacc = np.zeros(ITERATION,float)
 step = 0
-end_iter = 3 # Number of Epochs
+end_iter = 1 # Number of Epochs
 all_loss = np.zeros(end_iter, float)
 all_accuracy = np.zeros(end_iter, float)
 prune_percent = 10 # 10 percent pruning rate
@@ -485,7 +501,12 @@ for _ite in range(0, ITERATION):
     if iter_ % valid_freq == 0:
         accuracy = test(model, test_loader, criterion)
         res = get_acc(model,test_loader,10)
-        print("The accuracy, gradient norm, hessian matrix", res)
+        #print(res)
+        file_ = f'{full_path}/overall_stats'
+        checkdir(file_)
+        file_path = f'{file_}/{_ite}.pkl'
+        with open(file_path, 'wb+') as f:
+          pickle.dump(res, f) # storing the overall stats file
         # Save Weights if accuracy is greater than best accuracy
         if accuracy > best_accuracy:
             best_accuracy = accuracy
