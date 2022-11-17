@@ -1,4 +1,3 @@
-from matplotlib.widgets import RectangleSelector
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -476,7 +475,7 @@ ITERATION = 2 # number of cycles of pruning that should be done.
 comp = np.zeros(ITERATION,float)
 bestacc = np.zeros(ITERATION,float)
 step = 0
-end_iter = 1 # Number of Epochs
+end_iter = 3 # Number of Epochs
 all_loss = np.zeros(end_iter, float)
 all_accuracy = np.zeros(end_iter, float)
 prune_percent = 10 # 10 percent pruning rate
