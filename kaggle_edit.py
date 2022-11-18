@@ -23,9 +23,10 @@ import pickle
 class ImbalanceCIFAR10(torchvision.datasets.CIFAR10):
     cls_num = 10
 
-    def __init__(self, root, imb_type='exp', imb_factor=0.5, rand_number=0, train=True,
-                 transform=None, target_transform=None, download=False):
+    def __init__(self, root, imb_type='manual', imb_factor=0.5, rand_number=42, train=True,
+                 transform=None, target_transform=None, download=False, manual_class=[0, 3, 8]):
         super(ImbalanceCIFAR10, self).__init__(root, train, transform, target_transform, download)
+        self.manual_class = manual_class
         np.random.seed(rand_number)
         img_num_list = self.get_img_num_per_cls(self.cls_num, imb_type, imb_factor)
         self.gen_imbalanced_data(img_num_list)
@@ -42,6 +43,12 @@ class ImbalanceCIFAR10(torchvision.datasets.CIFAR10):
                 img_num_per_cls.append(int(img_max))
             for cls_idx in range(cls_num // 2):
                 img_num_per_cls.append(int(img_max * imb_factor))
+        elif imb_type == 'manual':
+            for index in range(cls_num):
+              if index in self.manual_class:
+                img_num_per_cls.append(3500)
+              else:
+                img_num_per_cls.append(int(img_max))
         else:
             img_num_per_cls.extend([int(img_max)] * cls_num)
         return img_num_per_cls
@@ -332,7 +339,8 @@ def test(model, test_loader, criterion):
 
 transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
 traindataset = datasets.CIFAR10('./data', train=True, download=True,transform=transform) # this is for balance
-# traindataset = ImbalanceCIFAR10('./data',train=True,download=True, transform=transform)  # this is for imbalance
+print("the total length is", len(traindataset))
+# traindataset = ImbalanceCIFAR10('./data/imbalance',train=True,download=True, transform=transform)  # this is for imbalance
 testdataset = datasets.CIFAR10('./data', train=False, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(traindataset, batch_size=60, shuffle=True, num_workers=0,drop_last=False)
