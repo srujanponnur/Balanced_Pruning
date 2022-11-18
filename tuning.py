@@ -337,10 +337,10 @@ def test(model, test_loader, criterion):
         accuracy = 100. * correct / len(test_loader.dataset)
     return accuracy
 
-transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
-traindataset = datasets.CIFAR10('./data', train=True, download=True,transform=transform) # this is for balance
-# traindataset = ImbalanceCIFAR10('./data/imbalance',train=True,download=True, transform=None)  # this is for imbalance
-# print("the total length is", len(traindataset))
+# transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
+# traindataset = datasets.CIFAR10('./data', train=True, download=True,transform=transform) # this is for balance
+traindataset = ImbalanceCIFAR10('./data/imbalance',train=True,download=True, transform=None)  # this is for imbalance
+print("the total length is", len(traindataset))
 testdataset = datasets.CIFAR10('./data', train=False, transform=None)
 
 train_loader = torch.utils.data.DataLoader(traindataset, batch_size=60, shuffle=True, num_workers=0,drop_last=False)
