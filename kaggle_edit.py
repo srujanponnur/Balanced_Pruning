@@ -19,6 +19,10 @@ import torchvision.utils as vutils
 import seaborn as sns
 import torch.nn.init as init
 import pickle
+import json
+from sklearn.metrics import classification_report
+from torchmetrics.classification import MulticlassAccuracy
+
 
 class ImbalanceCIFAR10(torchvision.datasets.CIFAR10):
     cls_num = 10
@@ -65,10 +69,10 @@ class ImbalanceCIFAR10(torchvision.datasets.CIFAR10):
             idx = np.where(targets_np == the_class)[0]
             np.random.shuffle(idx)
             selec_idx = idx[:the_img_num]
-            new_data.append(self.data[selec_idx, ...] / 255)
+            new_data.append(self.data[selec_idx, ...])
             new_targets.extend([the_class, ] * the_img_num)
         new_data = np.vstack(new_data)
-        self.data = new_data
+        self.data = new_data 
         self.targets = new_targets
         
     def get_cls_num_list(self):
@@ -76,6 +80,57 @@ class ImbalanceCIFAR10(torchvision.datasets.CIFAR10):
         for i in range(self.cls_num):
             cls_num_list.append(self.num_per_cls_dict[i])
         return cls_num_list
+
+
+# class ImbalanceCIFAR10(torchvision.datasets.CIFAR10):
+#     cls_num = 10
+
+#     def __init__(self, root, imb_type='exp', imb_factor=0.5, rand_number=0, train=True,
+#                  transform=None, target_transform=None, download=False):
+#         super(ImbalanceCIFAR10, self).__init__(root, train, transform, target_transform, download)
+#         np.random.seed(rand_number)
+#         img_num_list = self.get_img_num_per_cls(self.cls_num, imb_type, imb_factor)
+#         self.gen_imbalanced_data(img_num_list)
+
+#     def get_img_num_per_cls(self, cls_num, imb_type, imb_factor):
+#         img_max = len(self.data) / cls_num
+#         img_num_per_cls = []
+#         if imb_type == 'exp':
+#             for cls_idx in range(cls_num):
+#                 num = img_max * (imb_factor**(cls_idx / (cls_num - 1.0)))
+#                 img_num_per_cls.append(int(num))
+#         elif imb_type == 'step':
+#             for cls_idx in range(cls_num // 2):
+#                 img_num_per_cls.append(int(img_max))
+#             for cls_idx in range(cls_num // 2):
+#                 img_num_per_cls.append(int(img_max * imb_factor))
+#         else:
+#             img_num_per_cls.extend([int(img_max)] * cls_num)
+#         return img_num_per_cls
+
+#     def gen_imbalanced_data(self, img_num_per_cls):
+#         new_data = []
+#         new_targets = []
+#         targets_np = np.array(self.targets, dtype=np.int64)
+#         classes = np.unique(targets_np)
+#         # np.random.shuffle(classes)
+#         self.num_per_cls_dict = dict()
+#         for the_class, the_img_num in zip(classes, img_num_per_cls):
+#             self.num_per_cls_dict[the_class] = the_img_num
+#             idx = np.where(targets_np == the_class)[0]
+#             np.random.shuffle(idx)
+#             selec_idx = idx[:the_img_num]
+#             new_data.append(self.data[selec_idx, ...])
+#             new_targets.extend([the_class, ] * the_img_num)
+#         new_data = np.vstack(new_data)
+#         self.data = new_data
+#         self.targets = new_targets
+        
+#     def get_cls_num_list(self):
+#         cls_num_list = []
+#         for i in range(self.cls_num):
+#             cls_num_list.append(self.num_per_cls_dict[i])
+#         return cls_num_list
 
 
 class BasicBlock(nn.Module):
@@ -306,6 +361,8 @@ def train(model, train_loader, optimizer, criterion):
     for batch_idx, (imgs, targets) in enumerate(train_loader):
         optimizer.zero_grad()
         #imgs, targets = next(train_loader)
+        # imgs = imgs
+        # print(imgs[0])
         imgs, targets = imgs.to(device), targets.to(device)
         output = model(imgs)
         train_loss = criterion(output, targets)
@@ -322,26 +379,39 @@ def train(model, train_loader, optimizer, criterion):
     return train_loss.item()
 
 def test(model, test_loader, criterion):
+    global multiclass_metric
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
     test_loss = 0
     correct = 0
+    y_actual = []
+    total_y_pred = []
+    result = None
     with torch.no_grad():
         for data, target in test_loader:
+            y_actual.extend(target.tolist())
             data, target = data.to(device), target.to(device)
             output = model(data)
             test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
             pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
+            total_y_pred.extend([i[0] for i in pred.tolist()])
+            #print(pred.tolist())
             correct += pred.eq(target.data.view_as(pred)).sum().item()
+        #print(y_actual, total_y_pred, torch.tensor(y_actual), torch.tensor(total_y_pred))
+        result = classification_report(y_actual, total_y_pred, output_dict=True)
+        per_class_accuracy = multiclass_metric(torch.tensor(y_actual),torch.tensor(total_y_pred)).tolist()
+        result['per_class_accuracy'] = per_class_accuracy # saving the per class accuracy
         test_loss /= len(test_loader.dataset)
         accuracy = 100. * correct / len(test_loader.dataset)
-    return accuracy
+    #print("The dict is", result)
+    return accuracy, result
 
-transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
-traindataset = datasets.CIFAR10('./data', train=True, download=True,transform=transform) # this is for balance
-# traindataset = ImbalanceCIFAR10('./data/imbalance',train=True,download=True, transform=None)  # this is for imbalance
-# print("the total length is", len(traindataset))
-testdataset = datasets.CIFAR10('./data', train=False, transform=None)
+multiclass_metric = MulticlassAccuracy(num_classes=10, average=None)  #for multiclass accuracy change num_classes
+transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
+transform_general = transforms.Compose([transforms.ToTensor()])
+traindataset = datasets.CIFAR10('./data', train=True, download=True,transform=transform_general) # this is for balance
+#traindataset = ImbalanceCIFAR10('./data/imbalance',train=True, download=True, transform=transform_general)  # this is for imbalance
+testdataset = datasets.CIFAR10('./data', train=False, transform=transform_general)
 
 train_loader = torch.utils.data.DataLoader(traindataset, batch_size=60, shuffle=True, num_workers=0,drop_last=False)
     #train_loader = cycle(train_loader)
@@ -355,12 +425,12 @@ lenet_model = LeNet5().to(device)
 
 model = resnet_model
 
-model.apply(weight_init)
+# model.apply(weight_init)
 
 initial_state_dict = copy.deepcopy(model.state_dict()) # check what model points to!
 
 path = './data'
-model_string = "kaggle_edit"
+model_string = "resnet_balance_18th_afternoon"
 dataset = 'cifar10'
 full_path = f'{path}/{model_string}/{dataset}'
 
@@ -405,11 +475,14 @@ for _ite in range(0, ITERATION):
   for iter_ in pbar:
     # Frequency for Testing
     if iter_ % valid_freq == 0:
-        accuracy = test(model, test_loader, criterion)
+        accuracy, stat_dict = test(model, test_loader, criterion)
         # Save Weights if accuracy is greater than best accuracy
         if accuracy > best_accuracy:
             best_accuracy = accuracy
             checkdir(f"{full_path}") # change the path depending on model
+            json_path = f"{full_path}/{_ite}_stats.json"
+            with open(json_path, 'w') as f:
+                json.dump(stat_dict, f)
             torch.save(model,f"{full_path}/{_ite}_model_lt.pth.tar")
 
     # Training
