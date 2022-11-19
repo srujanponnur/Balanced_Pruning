@@ -459,6 +459,7 @@ valid_freq = 1 # frequency of validation
 print_freq = 1 # frequency for printing the loss and accuracy (prints every iteration)
 
 
+
 for _ite in range(0, ITERATION):
   if not _ite == 0:
       prune_by_percentile(prune_percent, resample=resample, reinit=reinit)
