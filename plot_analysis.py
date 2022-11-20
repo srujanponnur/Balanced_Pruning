@@ -9,6 +9,8 @@ import copy
 file_path = '.\data\jsons_balanced'  # should be balanced 
 file_path_aug = '.\data\jsons_aug'   # should be augmented
 file_path_imb = '.\data\jsons_imbalanced' # should be imbalanced
+save_path = '.\data'
+
 num_classes = 10
 
 files = [file_path, file_path_aug, file_path_imb]
@@ -35,8 +37,10 @@ total_accuracy = [0]*num_classes
 
 pruning_map = {}
 empty = [{'precision':[0]*num_classes,'recall':[0]*num_classes,'accuracy':[0]*num_classes,'f1_score':[0]*num_classes} for i in range(num_classes)]
+total_accuracy = []
 for model_path in files:
     classes = copy.deepcopy(empty)
+    accuracies = []
     for file in os.listdir(model_path):
         if 'json' in file:
             ite = int(file.split('_')[0])
@@ -48,14 +52,12 @@ for model_path in files:
                     classes[i]['recall'][ite] = data[str(i)]['recall']
                     classes[i]['f1_score'][ite] = data[str(i)]['f1-score']
                     classes[i]['accuracy'][ite] = data['per_class_accuracy'][i]
-                total_accuracy[i] = data.get('accuracy')
+                accuracies.append(data.get('accuracy'))
     model_results.append(classes)
+    total_accuracy.append(accuracies)
 
-plot_path = path.join(model_path,'manual_plots')
+plot_path = path.join(save_path,'automated_plots')
 checkdir(plot_path)
-
-
-
 
 for i in range(num_classes):
     checkdir(f"{plot_path}/{i}")
@@ -112,3 +114,16 @@ for i in range(num_classes):
     plt.close()
 
 
+
+plt.plot(pruning_ratios, total_accuracy[0], c="blue", label="Accuracy on Balanced Dataset")
+plt.plot(pruning_ratios, total_accuracy[1], c="red", label="Accuracy on Augmented Dataset")
+plt.plot(pruning_ratios,  total_accuracy[2], c="yellow", label="Accuracy on Imbalanced Dataset")
+plt.title(f"Accuracy vs Pruning Ratio")
+plt.xlabel("Pruned Ratios")
+plt.ylabel("Accuracy")
+# plt.xticks(a, comp, rotation ="vertical") 
+plt.ylim(0,1)
+plt.legend()
+plt.grid(color="gray")
+plt.savefig(f"{plot_path}/accuracies.png", dpi=1200)
+plt.close()
