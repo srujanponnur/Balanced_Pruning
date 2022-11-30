@@ -338,7 +338,7 @@ def train(model, train_loader, optimizer, criterion):
         optimizer.step()
     return train_loss.item()
 
-def test(model, test_loader, criterion):
+def test(model, test_loader,test_loader_full, criterion):
     global multiclass_metric
     num_classes = 10  #change this for different dataset
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -367,7 +367,7 @@ def test(model, test_loader, criterion):
 
     loss_func = nn.CrossEntropyLoss()
     grad_norm_dict = {i: [] for i in range(num_classes)}
-    for x_test, y_test in test_loader:
+    for x_test, y_test in test_loader_full:
         x_test, y_test = x_test.to(device), y_test.to(device)
         y_pred = model(x_test)
         for i in range(num_classes):
@@ -408,6 +408,8 @@ testdataset = datasets.CIFAR10('./data', train=False, transform=transform_genera
 train_loader = torch.utils.data.DataLoader(traindataset, batch_size=60, shuffle=True, num_workers=0,drop_last=False)
     #train_loader = cycle(train_loader)
 test_loader = torch.utils.data.DataLoader(testdataset, batch_size=60, shuffle=False, num_workers=0,drop_last=True)
+test_loader_full = torch.utils.data.DataLoader(testdataset, batch_size=len(testdataset), shuffle=False, num_workers=0,drop_last=True)
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -464,7 +466,7 @@ for _ite in range(0, ITERATION):
   for iter_ in pbar:
     # Frequency for Testing
     if iter_ % valid_freq == 0:
-        accuracy, stat_dict = test(model, test_loader, criterion)
+        accuracy, stat_dict = test(model, test_loader, test_loader_full, criterion)
         # Save Weights if accuracy is greater than best accuracy
         if accuracy > best_accuracy:
             best_accuracy = accuracy
